@@ -1,7 +1,7 @@
 package org.syaku.springboot.freemarker;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -48,7 +48,7 @@ public class FreeMarkerSharedVariablesTest {
     this.mockMvc.perform(get("/"))
       .andExpect(status().isOk())
       .andExpect(view().name("hello"))
-      .andDo(print());
+      .andExpect(content().string("good man good"));
   }
 }
 
