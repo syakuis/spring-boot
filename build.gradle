@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'net.ltgt.apt' version '0.10'
+    id 'org.springframework.boot' version '2.0.3.RELEASE'
+}
+
+group 'org.syaku'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+ext {
+    springBootVersion = '2.0.3.RELEASE'
+}
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}"
+    compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile 'net.sourceforge.htmlunit:htmlunit:2.29'
+
+    compileOnly 'org.projectlombok:lombok:1.18.0'
+    apt 'org.projectlombok:lombok:1.18.0'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    baseName = 'spring-boot'
+    version =  version
+}
