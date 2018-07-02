@@ -8,7 +8,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,12 +22,16 @@ import lombok.extern.slf4j.Slf4j;
  * @since 2018. 6. 29.
  */
 public class ParameterUtilsTest {
-  @Test
-  public void 병합_테스트() {
-    Map<String, String> params = new LinkedHashMap<>();
+  Map<String, String> params = new LinkedHashMap<>();
+
+  @Before
+  public void setup() {
     params.put("page", "1");
     params.put("search", "choi");
+  }
 
+  @Test
+  public void 병합_테스트() {
     assertEquals(ParameterUtils.mapToString(params), "page=1&search=choi");
     assertEquals(ParameterUtils.stringToMap("page=1&search=choi"), params);
 
@@ -41,6 +47,18 @@ public class ParameterUtilsTest {
     assertEquals(ParameterUtils.merge(params, "mode=save&search="), "page=1&mode=save");
     assertEquals(
       ParameterUtils.merge(params, "mode=save&search=", true), "page=1&search=&mode=save");
+
+    assertEquals(ParameterUtils.merge(Collections.emptyMap(), "mode=save&search="), "mode=save");
+    assertEquals(ParameterUtils.merge(null, "mode=save&search="), "mode=save");
+  }
+
+  @Test
+  public void 꺼내기_테스트() {
+    assertEquals(ParameterUtils.pick(params, "page="), "page=1");
+    assertEquals(ParameterUtils.pick(params, "page=&search=choi"), "page=1&search=choi");
+    assertEquals(ParameterUtils.pick(params, "test=man&page=&search=choi"), "test=man&page=1&search=choi");
+    assertEquals(ParameterUtils.pick(Collections.emptyMap(), "test=man&page=&search=choi"), "test=man&search=choi");
+    assertEquals(ParameterUtils.pick(null, "test=man&page=&search=choi"), "test=man&search=choi");
   }
 }
 
@@ -90,26 +108,26 @@ final class ParameterUtils {
   }
 
   /**
-   * @param aParams 대상이될 파라메터 맵
+   * @param target 대상이될 파라메터 맵
    * @return string parameter
    */
-  public static String mapToString(Map<String, String> aParams) {
-    return mapToString(aParams, false);
+  public static String mapToString(Map<String, String> target) {
+    return mapToString(target, false);
   }
 
   /**
    * 파라메터 맵을 문자열로 만들어 반환한다. allowEmpty 가 true 인 경우 빈값도 이름을 만든다. 기본적으로 false 이다.
-   * @param aParams 대상이될 파라메터맵
+   * @param target 대상이될 파라메터맵
    * @param allowEmpty 빈값을 만들지 여부 기본적으로 만들지 않는 다.
    * @return parameter string
    */
-  public static String mapToString(Map<String, String> aParams, boolean allowEmpty) {
-    if (aParams.isEmpty()) {
+  public static String mapToString(Map<String, String> target, boolean allowEmpty) {
+    if (target == null || target.isEmpty()) {
       return "";
     }
 
     StringBuilder result = new StringBuilder();
-    for (Map.Entry<String, String> param : aParams.entrySet()) {
+    for (Map.Entry<String, String> param : target.entrySet()) {
       String value = param.getValue();
       if (!allowEmpty && isEmpty(value)) {
         continue;
@@ -127,11 +145,13 @@ final class ParameterUtils {
    * @return parameter map
    */
   public static Map<String, String> union(Map<String, String> target, String value) {
-    if (target.isEmpty()) {
-      return Collections.emptyMap();
-    }
+    Map<String, String> result;
 
-    Map<String, String> result = new LinkedHashMap<>(target);
+    if (target == null || target.isEmpty()) {
+      result = new LinkedHashMap<>();
+    } else {
+      result = new LinkedHashMap<>(target);
+    }
     result.putAll(stringToMap(value));
 
     return result;
@@ -158,10 +178,32 @@ final class ParameterUtils {
    * (page=1&search=choi , mode=save) return "page=1&search=choi&mode=save"
    * @param target parameter map
    * @param value parameter string
-   * @param allowEmpty mapToString 에서 사용될 매개변수
+   * @param allowEmpty 빈값을 가진 파라메터를 제거할지 여부를 설정한다. mapToString 에서 사용된다.
    * @return parameter string
    */
   public static String merge(Map<String, String> target, String value, boolean allowEmpty) {
     return mapToString(union(target, value), allowEmpty);
+  }
+
+  /**
+   *
+   * @param target
+   * @param value
+   * @return
+   */
+  public static String pick(Map<String, String> target, String value) {
+    Map<String, String> values = stringToMap(value);
+
+    if (target == null || target.isEmpty()) {
+      return mapToString(values);
+    }
+
+    for (Map.Entry<String, String> item : values.entrySet()) {
+      if (StringUtils.isEmpty(item.getValue())) {
+        values.put(item.getKey(), target.get(item.getKey()));
+      }
+    }
+
+    return mapToString(values);
   }
 }
