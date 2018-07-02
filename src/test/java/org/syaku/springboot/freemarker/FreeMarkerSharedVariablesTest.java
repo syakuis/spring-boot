@@ -59,5 +59,4 @@ class FreeMarkerControllerTest {
   public String hello() {
     return "hello";
   }
-
 }

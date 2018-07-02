@@ -27,11 +27,17 @@ dependencies {
     testCompile 'net.sourceforge.htmlunit:htmlunit:2.29'
 
     compileOnly 'org.projectlombok:lombok:1.18.0'
-    apt 'org.projectlombok:lombok:1.18.0'
+    testCompile 'org.projectlombok:lombok:1.18.0'
+//    apt 'org.projectlombok:lombok:1.18.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 jar {
     baseName = 'spring-boot'
-    version =  version
+    version
+    manifest {
+        attributes 'Implementation-Title': 'spring boot',
+                   'Implementation-Version': version,
+                   'Main-Class': 'hello.helloWorld'
+    }
 }
