@@ -83,7 +83,7 @@ public class ParameterUtilsTest {
 
     assertEquals(ParameterUtils.pick(params, "page="), "page=1");
     assertEquals(ParameterUtils.pick(params, "page=&search=choi"), "page=1&search=choi");
-    assertEquals(ParameterUtils.pick(params, "test=man&page=&search=choi"), "test=man&page=1&search=choi");
+    assertEquals(ParameterUtils.pick(params, "test=man&page=&search=choi2"), "test=man&page=1&search=choi2");
     assertEquals(ParameterUtils.pick(Collections.emptyMap(), "test=man&page=&search=choi"), "test=man&search=choi");
     assertEquals(ParameterUtils.pick(null, "test=man&page=&search=choi"), "test=man&search=choi");
   }
@@ -113,6 +113,17 @@ final class ParameterUtils {
     return value == null || value.length() == 0;
   }
 
+  private static String decode(String value) throws UnsupportedEncodingException {
+    return URLDecoder.decode(value, ParameterUtils.charset);
+  }
+
+  private static List<String> add(List<String> values, String value) {
+    if (value != null && value.length() > 0) {
+      values.add(value);
+    }
+    return values;
+  }
+
   /**
    * 문자열 파라메터를 맵 형식으로 만들어 반환한다. 순서를 유지하기 위해 {@link LinkedHashMap} 을 사용했다.
    * @param params string parameter type
@@ -128,22 +139,12 @@ final class ParameterUtils {
     try {
       for (String pair : pairs) {
         int idx = pair.indexOf("=");
-        String name = URLDecoder.decode(pair.substring(0, idx), ParameterUtils.charset);
-        String value = URLDecoder.decode(pair.substring(idx + 1), ParameterUtils.charset);
+        String name = decode(pair.substring(0, idx));
+        String value = decode(pair.substring(idx + 1));
 
-        if (store.containsKey(name)) {
-          List<String> values = store.get(name);
-          if (value != null && value.length() > 0) {
-            values.add(value);
-          }
-          store.put(name, values);
-        } else {
-          List<String> values = new LinkedList<>();
-          if (value != null && value.length() > 0) {
-            values.add(value);
-          }
-          store.put(name, values);
-        }
+
+        List<String> values = store.containsKey(name) ? store.get(name) : new LinkedList<>();
+        store.put(name, add(values, value));
       }
     } catch (UnsupportedEncodingException e) {
       log.error(e.getMessage());
@@ -261,12 +262,15 @@ final class ParameterUtils {
     return result;
   }
 
-
   /**
+   * 대상이 되는 파라메터 맵에서 쿼리에 맞는 파라메터만 추출한다.
    *
-   * @param target
-   * @param query
-   * @return
+   * (page=1&search=choi , page=) return "page=2"
+   * (page=1&search=choi , page=2&mode=save) return "page=2&mode=save"
+   * (page=1&search=choi , mode=save) return "mode=save"
+   * @param target parameter map
+   * @param query parameter query string
+   * @return parameter string
    */
   public static String pick(Map<String, String[]> target, String query) {
     Map<String, String[]> result = stringToMap(query);
