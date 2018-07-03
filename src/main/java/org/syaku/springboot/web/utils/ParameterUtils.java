@@ -20,18 +20,9 @@ public final class ParameterUtils {
    * @param charset String default UTF-8
    */
   public static void setCharset(String charset) {
-    if (!isEmpty(charset)) {
+    if (charset == null || charset.length() == 0) {
       ParameterUtils.charset = charset;
     }
-  }
-
-  /**
-   * 값이 빈값인지 판단한다.
-   * @param value 확인할 값
-   * @return boolean false 빈값
-   */
-  private static boolean isEmpty(String value) {
-    return value == null || value.length() == 0;
   }
 
   private static String decode(String value) throws UnsupportedEncodingException {
