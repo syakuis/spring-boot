@@ -54,12 +54,16 @@ public final class ParameterUtils {
         String name = decode(pair.substring(0, idx));
         String value = decode(pair.substring(idx + 1));
 
+        List<String> values = new LinkedList<>();
 
-        List<String> values = store.containsKey(name) ? store.get(name) : new LinkedList<>();
+        if (store.containsKey(name)) {
+          values = store.get(name);
+        }
+
         store.put(name, add(values, value));
       }
     } catch (UnsupportedEncodingException e) {
-//      log.error(e.getMessage());
+      log.error(e.getMessage());
     }
 
     Map<String, String[]> result = new LinkedHashMap<>();
@@ -130,6 +134,29 @@ public final class ParameterUtils {
   }
 
   /**
+   * parameter query string 첫 문자가 ? 혹은 & 인 경우 반환한다.
+   * @param query parameter query string
+   * @return string ? | & | ''
+   */
+  private static String findInitialString(String query) {
+    if (query == null) {
+      return "";
+    }
+
+    if (query.indexOf("?") == 0) {
+      return "?";
+    } else if (query.indexOf("&") == 0) {
+      return "&";
+    } else {
+      return "";
+    }
+  }
+
+  private static String initialStringReplace(String query) {
+    return query == null ? null : query.replaceAll("^(\\&|\\?)", "");
+  }
+
+  /**
    * 대상이 되는 파라매터 맵에 문자열 파라메터 구문을 이용하여 문자열 파라메터를 반환한다.
    * @param target parameter map
    * @param query parameter query string
@@ -154,7 +181,9 @@ public final class ParameterUtils {
    * @return parameter string
    */
   public static String merge(Map<String, String[]> target, String query, boolean allowEmpty) {
-    return mapToString(union(target, query), allowEmpty);
+    String initial = findInitialString(query);
+    String newQuery = initialStringReplace(query);
+    return initial + mapToString(union(target, newQuery), allowEmpty);
   }
 
   private static String mapToLog(Map<String, String[]> target) {
@@ -185,10 +214,13 @@ public final class ParameterUtils {
    * @return parameter string
    */
   public static String pick(Map<String, String[]> target, String query) {
-    Map<String, String[]> result = stringToMap(query);
+    String initial = findInitialString(query);
+    String newQuery = initialStringReplace(query);
+
+    Map<String, String[]> result = stringToMap(newQuery);
 
     if (target == null || target.isEmpty()) {
-      return mapToString(result);
+      return initial + mapToString(result);
     }
 
     for (Map.Entry<String, String[]> map : result.entrySet()) {
@@ -197,6 +229,6 @@ public final class ParameterUtils {
       }
     }
 
-    return mapToString(result);
+    return initial + mapToString(result);
   }
 }

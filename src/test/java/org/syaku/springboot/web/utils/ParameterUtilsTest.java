@@ -72,6 +72,10 @@ public class ParameterUtilsTest {
 
     assertEquals(ParameterUtils.merge(Collections.emptyMap(), "mode=save&search="), "mode=save");
     assertEquals(ParameterUtils.merge(null, "mode=save&search="), "mode=save");
+
+    assertEquals(ParameterUtils.merge(params, "?mode=save"), "?page=1&search=choi&mode=save");
+    assertEquals(ParameterUtils.merge(null, "&mode=save&search="), "&mode=save");
+    assertEquals(ParameterUtils.merge(null, "?mode=save&search="), "?mode=save");
   }
 
   @Test
@@ -84,5 +88,9 @@ public class ParameterUtilsTest {
     assertEquals(ParameterUtils.pick(params, "test=man&page=&search=choi2"), "test=man&page=1&search=choi2");
     assertEquals(ParameterUtils.pick(Collections.emptyMap(), "test=man&page=&search=choi"), "test=man&search=choi");
     assertEquals(ParameterUtils.pick(null, "test=man&page=&search=choi"), "test=man&search=choi");
+
+    assertEquals(ParameterUtils.pick(params, "?page="), "?page=1");
+    assertEquals(ParameterUtils.pick(params, "&page="), "&page=1");
+    assertEquals(ParameterUtils.pick(null, "?test=man&page=&search=choi"), "?test=man&search=choi");
   }
 }
