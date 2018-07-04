@@ -1,6 +1,7 @@
 package org.syaku.springboot.web.utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -74,8 +75,11 @@ public class ParameterUtilsTest {
     assertEquals(ParameterUtils.merge(null, "mode=save&search="), "mode=save");
 
     assertEquals(ParameterUtils.merge(params, "?mode=save"), "?page=1&search=choi&mode=save");
+    assertEquals(ParameterUtils.merge(params, "&search="), "&page=1");
     assertEquals(ParameterUtils.merge(null, "&mode=save&search="), "&mode=save");
     assertEquals(ParameterUtils.merge(null, "?mode=save&search="), "?mode=save");
+    assertEquals(ParameterUtils.merge(null, "?"), "");
+    assertEquals(ParameterUtils.merge(null, "&"), "");
   }
 
   @Test
@@ -92,5 +96,7 @@ public class ParameterUtilsTest {
     assertEquals(ParameterUtils.pick(params, "?page="), "?page=1");
     assertEquals(ParameterUtils.pick(params, "&page="), "&page=1");
     assertEquals(ParameterUtils.pick(null, "?test=man&page=&search=choi"), "?test=man&search=choi");
+    assertEquals(ParameterUtils.pick(null, "?"), "");
+    assertEquals(ParameterUtils.pick(null, "&"), "");
   }
 }

@@ -152,6 +152,11 @@ public final class ParameterUtils {
     }
   }
 
+  /**
+   * & 혹은 ? 문자가 첫글자에 포함되어있다면 제거한다.
+   * @param query 파라메터 쿼리
+   * @return 파라메터
+   */
   private static String initialStringReplace(String query) {
     return query == null ? null : query.replaceAll("^(\\&|\\?)", "");
   }
@@ -181,9 +186,7 @@ public final class ParameterUtils {
    * @return parameter string
    */
   public static String merge(Map<String, String[]> target, String query, boolean allowEmpty) {
-    String initial = findInitialString(query);
-    String newQuery = initialStringReplace(query);
-    return initial + mapToString(union(target, newQuery), allowEmpty);
+    return finalQueryString(query, mapToString(union(target, initialStringReplace(query)), allowEmpty));
   }
 
   private static String mapToLog(Map<String, String[]> target) {
@@ -214,13 +217,12 @@ public final class ParameterUtils {
    * @return parameter string
    */
   public static String pick(Map<String, String[]> target, String query) {
-    String initial = findInitialString(query);
     String newQuery = initialStringReplace(query);
 
     Map<String, String[]> result = stringToMap(newQuery);
 
     if (target == null || target.isEmpty()) {
-      return initial + mapToString(result);
+      return finalQueryString(query, mapToString(result));
     }
 
     for (Map.Entry<String, String[]> map : result.entrySet()) {
@@ -229,6 +231,19 @@ public final class ParameterUtils {
       }
     }
 
-    return initial + mapToString(result);
+    return finalQueryString(query, mapToString(result));
+  }
+
+  /**
+   * 최종 파라메터 쿼리를 완성한다.
+   * @param query 파라메터 쿼리
+   * @param parameter 변형된 파라메터 쿼리
+   * @return 파라메터 쿼리
+   */
+  private static String finalQueryString(String query, String parameter) {
+    if (parameter == null || Objects.equals("", parameter)) {
+      return "";
+    }
+    return findInitialString(query) + parameter;
   }
 }
